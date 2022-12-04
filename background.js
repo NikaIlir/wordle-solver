@@ -81,6 +81,9 @@ function getWords() {
         }
     }
 
+    present = present.filter((char) => !correct.includes(char))
+    absent = absent.filter((char) => !present.includes(char) && !correct.includes(char))
+
     suggest = words.filter(word => {
         return correct.every((letter, i) => !letter || word[i] === letter)
     }).filter(word => {
