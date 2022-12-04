@@ -1,0 +1,50 @@
+#solved {
+    overflow: scroll;
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    width: 200px;
+    max-height: 570px;
+    background: #3a3a3c;
+    color: white;
+    padding: 2px 10px;
+    border: 10px solid #3a3a3c;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 100;
+}
+
+.flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.flex-item {
+    box-sizing: border-box;
+    padding: 5px 10px;
+    font-size: 14px;
+    border: 1px solid #777;
+    flex: 1;
+    min-width: 33.33%;
+}
+
+.flex-item:not(:first-child):not(:nth-child(2)) {
+    flex-grow:0;
+}
+
+.flex-item-winner {
+    box-sizing: border-box;
+    padding: 5px 10px;
+    font-weight: 700;
+    font-size: 18px;
+    background-color: #6baa64;
+    border: 2px solid #3a3a3c;
+    flex: 1;
+    min-width: 20%;
+    text-align: center;
+    height: 35px;
+}
