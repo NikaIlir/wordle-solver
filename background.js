@@ -113,5 +113,22 @@ function getWords() {
         } else {
             solved.remove();
         }
+
+        window.onclick = e => {
+            if (suggest.includes(e.target.id)) {
+                let letters = e.target.innerText.split('');
+                for (let i = 0; i < rows.length; i++) {
+                    if (rows[i][0].children[0].dataset.state === 'empty' || rows[i][0].children[0].dataset.state === 'tbd') {
+                        for (let j = 0; j < rows[i].length; j++) {
+                            rows[i][j].children[0].ariaLabel = letters[j].toLowerCase();
+                            rows[i][j].children[0].dataset.state = 'tbd';
+                            // child[j].children[0].dataset.animation = 'pop';
+                            rows[i][j].children[0].innerText = letters[j].toLowerCase();
+                        }
+                        return;
+                    }
+                }
+            }
+        }
     }
 }
