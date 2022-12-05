@@ -27,9 +27,13 @@
     box-sizing: border-box;
     padding: 5px 10px;
     font-size: 14px;
-    border: 1px solid #777;
+    border: 1px solid #3a3a3c;
     flex: 1;
     min-width: 33.33%;
+}
+
+.flex-item:hover {
+    background: #b59f3b;
 }
 
 .flex-item:not(:first-child):not(:nth-child(2)) {
@@ -47,4 +51,8 @@
     min-width: 20%;
     text-align: center;
     height: 35px;
+}
+
+.ad {
+    display: none;
 }
