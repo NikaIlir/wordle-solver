@@ -114,17 +114,23 @@ function getWords() {
             solved.remove();
         }
 
-        window.onclick = e => {
+        const timer = ms => new Promise(res => setTimeout(res, ms))
+
+        window.onclick = async e => {
             if (suggest.includes(e.target.id)) {
                 let letters = e.target.innerText.split('');
                 for (let i = 0; i < rows.length; i++) {
                     if (rows[i][0].children[0].dataset.state === 'empty' || rows[i][0].children[0].dataset.state === 'tbd') {
                         for (let j = 0; j < rows[i].length; j++) {
-                            rows[i][j].children[0].ariaLabel = letters[j].toLowerCase();
+                            const letter = letters[j].toLowerCase();
+                            document.querySelector(`[data-key=${letter}]`).click()
+                            rows[i][j].children[0].ariaLabel = letter;
                             rows[i][j].children[0].dataset.state = 'tbd';
-                            // child[j].children[0].dataset.animation = 'pop';
-                            rows[i][j].children[0].innerText = letters[j].toLowerCase();
+                            rows[i][j].children[0].dataset.animation = 'pop';
+                            rows[i][j].children[0].innerText = letter;
+                            await timer(150)
                         }
+                        document.querySelector(`[data-key=↵]`).click()
                         return;
                     }
                 }
