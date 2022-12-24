@@ -137,10 +137,10 @@ function getWords() {
             let letters;
             if (suggest.includes(e.target.id)) {
                 letters = e.target.innerText.split('');
-            }
-            
-            if (e.target.className === 'flex-item-winner') {
+            } else if (e.target.className === 'flex-item-winner') {
                 letters = e.target.parentElement.innerText.split('');
+            } else {
+                return;
             }
 
             for (const letter of letters) {
