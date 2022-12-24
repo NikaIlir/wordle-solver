@@ -53,6 +53,41 @@
     height: 35px;
 }
 
+.suggested {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 10px;
+    box-sizing: border-box;
+    border-bottom: 1px solid gray;
+}
+
+.suggested-text {
+    box-sizing: border-box;
+    margin: 5px 0;
+    padding: 5px 0;
+    font-size: 14px;
+    border: 1px solid #3a3a3c;
+    flex: 1;
+    min-width: 33.33%;
+    cursor: auto;
+}
+
+.suggested-item {
+    box-sizing: border-box;
+    margin: 5px 0;
+    text-align: center;
+    padding: 5px 0;
+    font-size: 14px;
+    border: 1px solid #3a3a3c;
+    flex: 1;
+    min-width: 33.33%;
+    background: #b59f3b;
+}
+
+.suggested-item:hover {
+    background: #759f3b;
+}
+
 .ad {
     display: none;
 }

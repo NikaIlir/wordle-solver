@@ -110,6 +110,7 @@ function getWords() {
     drawBoard(suggest);
 
     function drawBoard(words) {
+        let mostCommonWord = mostCommonLettersInWords(words);
         let solved = document.getElementById("solved");
         let classItem = 'flex-item';
         if (words.length === 1) {
@@ -126,6 +127,17 @@ function getWords() {
                 solved.remove();
             })
             solved.innerHTML = `<div class="flex-container">${items}</div>`;
+
+            if (mostCommonWord) {
+                let suggest = document.createElement('div');
+                suggest.setAttribute('class', 'suggested');
+                suggest.innerHTML = `
+                    <div class="suggested-text">Suggested:</div>
+                    <div id="${mostCommonWord}" class="suggested-item">${mostCommonWord.toUpperCase()}</div>
+                `
+                solved.prepend(suggest);
+            }
+
             document.body.appendChild(solved);
         } else {
             solved.remove();
@@ -150,4 +162,35 @@ function getWords() {
             document.querySelector(`[data-key=↵]`).click()
         }
     }
+
+    function mostCommonLettersInWords(words) {
+        const letterCounts = {};
+        for (const word of words) {
+            for (const letter of word) {
+                if (!letterCounts[letter]) {
+                    letterCounts[letter] = 1;
+                } else {
+                    letterCounts[letter]++;
+                }
+            }
+        }
+
+        let mostCommonWord = "";
+        let highestCount = 0;
+        for (const word of words) {
+            if (/(.).*\1/.test(word)){
+                continue;
+            }
+            let count = 0;
+            for (const letter of word) {
+                count += letterCounts[letter];
+            }
+            if (count > highestCount) {
+                highestCount = count;
+                mostCommonWord = word;
+            }
+        }
+        return mostCommonWord;
+    }
+
 }
