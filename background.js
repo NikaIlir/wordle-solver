@@ -37,24 +37,27 @@ function getWords() {
         "zebra", "zesty", "zonal"
     ];
 
-    const row1Children = document.querySelectorAll('[aria-label="Row 1"]')[0].children;
-    const row2Children = document.querySelectorAll('[aria-label="Row 2"]')[0].children;
-    const row3Children = document.querySelectorAll('[aria-label="Row 3"]')[0].children;
-    const row4Children = document.querySelectorAll('[aria-label="Row 4"]')[0].children;
-    const row5Children = document.querySelectorAll('[aria-label="Row 5"]')[0].children;
-    const row6Children = document.querySelectorAll('[aria-label="Row 6"]')[0].children;
-
-    const rows = [row1Children, row2Children, row3Children, row4Children, row5Children, row6Children];
+    const rows = [
+        document.querySelectorAll('[aria-label="Row 1"]')[0].children,
+        document.querySelectorAll('[aria-label="Row 2"]')[0].children,
+        document.querySelectorAll('[aria-label="Row 3"]')[0].children,
+        document.querySelectorAll('[aria-label="Row 4"]')[0].children,
+        document.querySelectorAll('[aria-label="Row 5"]')[0].children,
+        document.querySelectorAll('[aria-label="Row 6"]')[0].children,
+    ];
 
     let absent = [];
     let present = [];
     let absent2d = [...Array(6)].map(() => [...Array(5)].fill(''));
     let present2d = [...Array(6)].map(() => [...Array(5)].fill(''));
     let correct = ['', '', '', '', ''];
-    let suggest = ["least", "crane", "trace", "slant", "crate", "trice", "stare", "leant", "saint", "lance", "crone"];
+    let suggestedWords = ["alert", "arose", "irate", "stare", "arise", "learn", "snare", "least", "crate", "react", "crane", "slant", "trice", "leant", "saint", "lance", "crone"];
 
-    if (row1Children[0].children[0].dataset.state === 'empty') {
-        drawBoard(suggest);
+    const isFirstRow = rows[0][0].children[0].dataset.state === 'empty'
+    let mostCommonWord = suggestedWords[0];
+    if (isFirstRow) {
+        drawBoard(suggestedWords, mostCommonWord);
+        insertSelectedWord(suggestedWords);
         return;
     }
 
@@ -83,71 +86,77 @@ function getWords() {
     present = present.filter((char, index, self) => self.indexOf(char) === index)
     absent = absent.filter((char) => !present.includes(char) && !correct.includes(char))
 
-    suggest = words.filter(word => {
+    suggestedWords = words.filter(word => {
         return correct.every((char, i) => !char || word[i] === char)
     })
 
-    suggest = suggest.filter(word => {
+    suggestedWords = suggestedWords.filter(word => {
         return present.every(char => word.includes(char))
     });
 
     for (let chars of present2d) {
-        suggest = suggest.filter(word => {
+        suggestedWords = suggestedWords.filter(word => {
             return chars.every((letter, i) => !letter || word[i] !== letter)
         })
     }
 
-    suggest = suggest.filter(word => {
+    suggestedWords = suggestedWords.filter(word => {
         return absent.every(letter => !word.includes(letter))
     });
 
     for (let chars of absent2d) {
-        suggest = suggest.filter(word => {
+        suggestedWords = suggestedWords.filter(word => {
             return chars.every((letter, i) => !letter || word[i] !== letter)
         })
     }
 
-    drawBoard(suggest);
+    let frequencyOfLetters = getFrequencyOfLetters(suggestedWords);
 
-    function drawBoard(words) {
-        let mostCommonWord = mostCommonLettersInWords(words);
-        let solved = document.getElementById("solved");
+    mostCommonWord = getMostCommonWord(suggestedWords, frequencyOfLetters, false);
+    if (!mostCommonWord) {
+        mostCommonWord = getMostCommonWord(suggestedWords, frequencyOfLetters, true);
+    }
+
+    drawBoard(suggestedWords, mostCommonWord);
+    insertSelectedWord(suggestedWords);
+
+    function drawBoard(suggestedWords, mostCommonWord) {
         let classItem = 'flex-item';
-        if (words.length === 1) {
-            words = words[0].split('');
+        if (suggestedWords.length === 1) {
+            suggestedWords = suggestedWords[0].split('');
             classItem = 'flex-item-winner'
         }
 
-        const items = words.map((e) => `<div id="${e}" class="${classItem}">${e.toUpperCase()}</div>`).join('');
+        const items = suggestedWords.map((e) => `<div id="${e}" class="${classItem}">${e.toUpperCase()}</div>`).join('');
 
-        if (!solved) {
-            solved = document.createElement('div');
-            solved.setAttribute('id', 'solved');
-            solved.addEventListener('click', async () => {
-                solved.remove();
+        let board = document.getElementById("solved");
+        if (!board) {
+            board = document.createElement('div');
+            board.setAttribute('id', 'solved');
+            board.addEventListener('click', async () => {
+                board.remove();
             })
-            solved.innerHTML = `<div class="flex-container">${items}</div>`;
+            board.innerHTML = `<div class="flex-container">${items}</div>`;
 
-            if (mostCommonWord) {
-                let suggest = document.createElement('div');
-                suggest.setAttribute('class', 'suggested');
-                suggest.innerHTML = `
-                    <div class="suggested-text">Suggested:</div>
-                    <div id="${mostCommonWord}" class="suggested-item">${mostCommonWord.toUpperCase()}</div>
-                `
-                solved.prepend(suggest);
-            }
+            let suggested = document.createElement('div');
+            suggested.setAttribute('class', 'suggested');
+            suggested.innerHTML = `
+                <div class="suggested-text">Suggested:</div>
+                <div id="${mostCommonWord}" class="suggested-item">${mostCommonWord.toUpperCase()}</div>
+            `
+            board.prepend(suggested);
 
-            document.body.appendChild(solved);
+            document.body.appendChild(board);
         } else {
-            solved.remove();
+            board.remove();
         }
+    }
 
-        const timer = ms => new Promise(res => setTimeout(res, ms))
-
+    function insertSelectedWord(suggestedWords) {
         window.onclick = async e => {
+            const timer = ms => new Promise(res => setTimeout(res, ms))
             let letters;
-            if (suggest.includes(e.target.id)) {
+            if (suggestedWords.includes(e.target.id)) {
                 letters = e.target.innerText.split('');
             } else if (e.target.className === 'flex-item-winner') {
                 letters = e.target.parentElement.innerText.split('');
@@ -163,27 +172,16 @@ function getWords() {
         }
     }
 
-    function mostCommonLettersInWords(words) {
-        const letterCounts = {};
-        for (const word of words) {
-            for (const letter of word) {
-                if (!letterCounts[letter]) {
-                    letterCounts[letter] = 1;
-                } else {
-                    letterCounts[letter]++;
-                }
-            }
-        }
-
+    function getMostCommonWord(words, frequencyOfLetters, repeated = false) {
         let mostCommonWord = "";
         let highestCount = 0;
         for (const word of words) {
-            if (/(.).*\1/.test(word)){
+            if (/(.).*\1/.test(word) && !repeated){
                 continue;
             }
             let count = 0;
             for (const letter of word) {
-                count += letterCounts[letter];
+                count += frequencyOfLetters[letter];
             }
             if (count > highestCount) {
                 highestCount = count;
@@ -193,4 +191,17 @@ function getWords() {
         return mostCommonWord;
     }
 
+    function getFrequencyOfLetters(words) {
+        const letters = {};
+        for (const word of words) {
+            for (const letter of word) {
+                if (!letters[letter]) {
+                    letters[letter] = 1;
+                } else {
+                    letters[letter]++;
+                }
+            }
+        }
+        return letters
+    }
 }
