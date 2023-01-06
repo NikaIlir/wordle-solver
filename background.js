@@ -37,6 +37,8 @@ function getWords() {
         "zebra", "zesty", "zonal"
     ];
 
+    const startingWords = ["alert", "arose", "irate", "stare", "arise", "learn", "snare", "least", "crate", "react", "crane", "slant", "trice", "leant", "saint", "lance", "crone"];
+
     const rows = [
         document.querySelectorAll('[aria-label="Row 1"]')[0].children,
         document.querySelectorAll('[aria-label="Row 2"]')[0].children,
@@ -46,81 +48,33 @@ function getWords() {
         document.querySelectorAll('[aria-label="Row 6"]')[0].children,
     ];
 
-    let absent = [];
-    let present = [];
-    let absent2d = [...Array(6)].map(() => [...Array(5)].fill(''));
-    let present2d = [...Array(6)].map(() => [...Array(5)].fill(''));
-    let correct = ['', '', '', '', ''];
-    let suggestedWords = ["alert", "arose", "irate", "stare", "arise", "learn", "snare", "least", "crate", "react", "crane", "slant", "trice", "leant", "saint", "lance", "crone"];
-
-    const isFirstRow = rows[0][0].children[0].dataset.state === 'empty'
-    let mostCommonWord = suggestedWords[0];
-    if (isFirstRow) {
-        drawBoard(suggestedWords, mostCommonWord);
-        insertSelectedWord(suggestedWords);
+    if (rows[0][0].children[0].dataset.state === 'empty') {
+        drawSuggestedWordsBoard(startingWords, startingWords[0]);
+        writeSelectedWordFromBoard(startingWords);
         return;
     }
 
+    let grid = [...Array(6)].map(() => [...Array(5)].fill(''));
+
     for (let i = 0; i < rows.length; i++) {
-        if (rows[i][0].children[0].dataset.state !== 'empty') {
-            for(let j = 0; j < rows[i].length; j++) {
-                const cell = rows[i][j].children[0];
-                if (cell.dataset.state === 'correct') {
-                    correct[j] = cell.innerHTML;
-                }
-
-                if (cell.dataset.state === 'present') {
-                    present.push(cell.innerHTML);
-                    present2d[i][j] = cell.innerHTML;
-                }
-
-                if (cell.dataset.state === 'absent') {
-                    absent.push(cell.innerHTML);
-                    absent2d[i][j] = cell.innerHTML;
-                }
-            }
+        for(let j = 0; j < rows[i].length; j++) {
+            const cell = rows[i][j].children[0];
+            grid[i][j] = {[cell.dataset.state]: cell.innerHTML}
         }
     }
 
-    present = present.filter((char) => !correct.includes(char))
-    present = present.filter((char, index, self) => self.indexOf(char) === index)
-    absent = absent.filter((char) => !present.includes(char) && !correct.includes(char))
+    const suggestedWords = getSuggestedWords(words, separateGrid(grid));
+    const frequencyOfLetters = getFrequencyOfLetters(suggestedWords);
 
-    suggestedWords = words.filter(word => {
-        return correct.every((char, i) => !char || word[i] === char)
-    })
-
-    suggestedWords = suggestedWords.filter(word => {
-        return present.every(char => word.includes(char))
-    });
-
-    for (let chars of present2d) {
-        suggestedWords = suggestedWords.filter(word => {
-            return chars.every((letter, i) => !letter || word[i] !== letter)
-        })
-    }
-
-    suggestedWords = suggestedWords.filter(word => {
-        return absent.every(letter => !word.includes(letter))
-    });
-
-    for (let chars of absent2d) {
-        suggestedWords = suggestedWords.filter(word => {
-            return chars.every((letter, i) => !letter || word[i] !== letter)
-        })
-    }
-
-    let frequencyOfLetters = getFrequencyOfLetters(suggestedWords);
-
-    mostCommonWord = getMostCommonWord(suggestedWords, frequencyOfLetters, false);
+    let mostCommonWord = getMostCommonWord(suggestedWords, frequencyOfLetters, false);
     if (!mostCommonWord) {
         mostCommonWord = getMostCommonWord(suggestedWords, frequencyOfLetters, true);
     }
 
-    drawBoard(suggestedWords, mostCommonWord);
-    insertSelectedWord(suggestedWords);
+    drawSuggestedWordsBoard(suggestedWords, mostCommonWord);
+    writeSelectedWordFromBoard(suggestedWords);
 
-    function drawBoard(suggestedWords, mostCommonWord) {
+    function drawSuggestedWordsBoard(suggestedWords, mostCommonWord) {
         let classItem = 'flex-item';
         if (suggestedWords.length === 1) {
             suggestedWords = suggestedWords[0].split('');
@@ -152,7 +106,7 @@ function getWords() {
         }
     }
 
-    function insertSelectedWord(suggestedWords) {
+    function writeSelectedWordFromBoard(suggestedWords) {
         window.onclick = async e => {
             const timer = ms => new Promise(res => setTimeout(res, ms))
             let letters;
@@ -172,11 +126,81 @@ function getWords() {
         }
     }
 
-    function getMostCommonWord(words, frequencyOfLetters, repeated = false) {
+    function separateGrid(grid) {
+        const correct = ['', '', '', '', ''];
+        let present = [];
+        let absent = [];
+        const present2d = [...Array(6)].map(() => [...Array(5)].fill(''));
+        const absent2d = [...Array(6)].map(() => [...Array(5)].fill(''));
+
+        for (let i = 0; i < grid[0].length; i++) {
+            if (!('empty' in grid[i][0])) {
+                for(let j = 0; j < grid[i].length; j++) {
+                    const cell = grid[i][j];
+                    if ('correct' in cell) {
+                        correct[j] = cell.correct;
+                    }
+
+                    if ('present' in cell) {
+                        present.push(cell.present);
+                        present2d[i][j] = cell.present;
+                    }
+
+                    if ('absent' in cell) {
+                        absent.push(cell.absent);
+                        absent2d[i][j] = cell.absent;
+                    }
+                }
+            }
+        }
+
+        present = present.filter((char) => !correct.includes(char))
+
+        present = present.filter((char, index, self) => self.indexOf(char) === index)
+
+        absent = absent.filter((char) => !present.includes(char) && !correct.includes(char))
+
+        return { correct, present, absent, present2d, absent2d };
+    }
+
+    function getSuggestedWords(words, separatedGrid) {
+        let { correct, present, absent, present2d, absent2d } = separatedGrid;
+
+        // Get all words that contains this fixed letters from correct
+        let suggestedWords = words.filter(word => {
+            return correct.every((char, i) => !char || word[i] === char)
+        })
+
+        // Get all words that contains this letters from present
+        suggestedWords = suggestedWords.filter(word => {
+            return present.every(char => word.includes(char))
+        });
+
+        for (let chars of present2d) {
+            suggestedWords = suggestedWords.filter(word => {
+                return chars.every((letter, i) => !letter || word[i] !== letter)
+            })
+        }
+
+        // Get all words that DON'T contain this letters from absent
+        suggestedWords = suggestedWords.filter(word => {
+            return absent.every(letter => !word.includes(letter))
+        });
+
+        for (let chars of absent2d) {
+            suggestedWords = suggestedWords.filter(word => {
+                return chars.every((letter, i) => !letter || word[i] !== letter)
+            })
+        }
+
+        return suggestedWords;
+    }
+
+    function getMostCommonWord(words, frequencyOfLetters, repeatedLetters = false) {
         let mostCommonWord = "";
         let highestCount = 0;
         for (const word of words) {
-            if (/(.).*\1/.test(word) && !repeated){
+            if (/(.).*\1/.test(word) && !repeatedLetters){
                 continue;
             }
             let count = 0;

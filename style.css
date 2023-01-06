@@ -3,7 +3,7 @@
     position: fixed;
     bottom: 10px;
     right: 10px;
-    width: 200px;
+    width: 225px;
     max-height: 570px;
     background: #3a3a3c;
     color: white;
@@ -21,9 +21,11 @@
     flex-wrap: wrap;
     margin: 0;
     box-sizing: border-box;
+    padding: 0 10px;
 }
 
 .flex-item {
+    text-align: center;
     box-sizing: border-box;
     padding: 5px 10px;
     font-size: 14px;
@@ -42,7 +44,7 @@
 
 .flex-item-winner {
     box-sizing: border-box;
-    padding: 5px 10px;
+    padding: 5px;
     font-weight: 700;
     font-size: 18px;
     background-color: #6baa64;
@@ -57,6 +59,7 @@
     display: flex;
     flex-wrap: wrap;
     margin: 10px;
+    padding-bottom: 8px;
     box-sizing: border-box;
     border-bottom: 1px solid gray;
 }
